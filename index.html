@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alert App</title>
+    <title>Alert App22</title>
     <!-- Add Materialize CSS CDN link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <!-- Add manifest for PWA -->
@@ -34,7 +34,7 @@
             throw new Error('Service Worker is not supported in this browser.');
         }
 
-        const socket = io('http://localhost:5000');  // Adjust the URL based on your server
+        const socket = io('https://poc-1yxy.onrender.com/');  // Adjust the URL based on your server
 
         socket.on('connect', function () {
             console.log('Connected to the server through socket.');
