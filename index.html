@@ -28,8 +28,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        // Add event listener to handle alerts
-        // This is a simple example, adjust as needed
         const alertList = document.getElementById('alertList');
 
         function addAlert(message) {
@@ -45,14 +43,7 @@
 
         // Fetch alerts from server
         function fetchAlerts() {
-            fetch('https://poc-1yxy.onrender.com/send_alert', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ 'message': 'Example Alert' }),
-            })
+            fetch('https://poc-1yxy.onrender.com/', { method: 'GET' })  // Use the correct endpoint
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
