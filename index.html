@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alert App4</title>
+    <title>Alert App</title>
     <!-- Add Materialize CSS CDN link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <!-- Add manifest for PWA -->
@@ -12,23 +12,37 @@
 <body>
 
 <div class="container">
-    <h2>Alerts</h2>
+    <h2>Alerts2</h2>
     <ul id="alertList" class="collection"></ul>
+    <div id="errorContainer"></div>
 </div>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-    }
+    const alertList = document.getElementById('alertList');
+    const errorContainer = document.getElementById('errorContainer');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const alertList = document.getElementById('alertList');
+    try {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    throw new Error('Service Worker registration failed: ' + error);
+                });
+        } else {
+            throw new Error('Service Worker is not supported in this browser.');
+        }
+
+        const socket = io('http://localhost:5000');  // Adjust the URL based on your server
+
+        socket.on('connect', function () {
+            console.log('Connected to the server through socket.');
+        });
+
+        socket.on('receive_alert', function (data) {
+            addAlert(data.message);
+        });
 
         function addAlert(message) {
             const li = document.createElement('li');
@@ -41,17 +55,35 @@
             // You can use the Web Audio API to play sound
         }
 
-        // Listen for 'receive_alert' event from the server
-        const socket = io('https://poc-1yxy.onrender.com/');  // Adjust the URL based on your server
-        socket.on('receive_alert', function (data) {
-            addAlert(data.message);
-        });
-
-        // No need to fetch from the server in this setup
-
         // Fetch alerts periodically, you can adjust the interval as needed
-        // setInterval(fetchAlerts, 5000);
-    });
+        setInterval(fetchAlerts, 5000);
+
+        function fetchAlerts() {
+            fetch('https://poc-1yxy.onrender.com/', { method: 'GET' })  // Use the correct endpoint
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        addAlert(data.message);
+                    } else {
+                        throw new Error('Error: ' + data.error_message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    displayError('Fetch error: ' + error.message);
+                });
+        }
+
+        function displayError(errorMessage) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'red-text';
+            errorDiv.innerText = errorMessage;
+            errorContainer.appendChild(errorDiv);
+        }
+    } catch (error) {
+        console.error('Frontend error:', error);
+        displayError('Frontend error: ' + error.message);
+    }
 </script>
 
 <!-- Add Materialize JS CDN link -->
