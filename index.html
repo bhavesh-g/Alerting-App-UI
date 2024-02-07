@@ -2,44 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alert App3</title>
+    <title>Alert App</title>
+    <!-- Add Materialize CSS CDN link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Add manifest for PWA -->
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-    <div id="alert-container"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
-    <script>
-        const socket = io.connect('https://pwapoc.onrender.com');  // Update with your actual Flask app URL
+<div class="container">
+    <h2>Alerts</h2>
+    <ul id="alertList" class="collection"></ul>
+</div>
 
-        socket.on('new_alert', function (data) {
-            // Handle new alert data
-            alert('new');
-            console.log('New alert:', data.data);
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
 
-            // Display alert in the HTML
-            const alertContainer = document.getElementById('alert-container');
-            const newAlertDiv = document.createElement('div');
-            newAlertDiv.innerHTML = `<strong>New Alert:</strong> ${data.data} (${new Date().toLocaleString()})<hr>`;
-            alertContainer.appendChild(newAlertDiv);
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add event listener to handle alerts
+        // This is a simple example, adjust as needed
+        const alertList = document.getElementById('alertList');
 
-            // Notify user and vibrate
-            if (Notification.permission === 'granted') {
-                const notification = new Notification('New Alert', {
-                    body: data.data,
-                });
+        function addAlert(message) {
+            const li = document.createElement('li');
+            li.className = 'collection-item';
+            li.innerText = message;
+            alertList.appendChild(li);
 
-                // Vibrate the device
-                if (navigator.vibrate) {
-                    navigator.vibrate(1000); // Vibrate for 1 second
-                }
-            }
-        });
-    </script>
+            // Add vibration and play sound logic here
+            navigator.vibrate([200, 100, 200]);
+            // You can use the Web Audio API to play sound
+        }
+
+        // Fetch alerts from server
+        function fetchAlerts() {
+            fetch('http://localhost:5000/send_alert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ 'message': 'Example Alert' }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        addAlert(data.message);
+                    } else {
+                        console.error('Error:', data.error_message);
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+        }
+
+        // Fetch alerts periodically, you can adjust the interval as needed
+        setInterval(fetchAlerts, 5000);
+    });
+</script>
+
+<!-- Add Materialize JS CDN link -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
 </html>
-
-
-
-
