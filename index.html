@@ -42,10 +42,11 @@
         const socket = io('https://poc-1yxy.onrender.com/');  // Adjust the URL based on your server
 
         socket.on('connect', function () {
-            console.log('Connected to the server through socket.');
+            alert('Connected to the server through socket.');
         });
 
         socket.on('receive_alert', function (data) {
+            alert();
             addAlert(data.message);
         });
 
